@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ตารางฟุตบอลโลก 2026 (เวลาไทย)</title>
+<style>
+  :root {
+    --green: #0a6b3a;
+    --green-dark: #064a28;
+    --gold: #ffd24a;
+    --bg: #f3f5f4;
+    --card: #ffffff;
+    --text: #1c2b22;
+    --muted: #6b7a72;
+    --live: #e63946;
+    --qualify: #d6f5df;
+    --qualify-border: #34a853;
+    --maybe: #fff6d6;
+    --maybe-border: #f4b400;
+    --out: #fde2e2;
+    --out-border: #e63946;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Sarabun', 'Segoe UI', Tahoma, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  header.topbar {
+    background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
+    color: #fff;
+    padding: 16px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+  header.topbar h1 {
+    margin: 0;
+    font-size: 1.4rem;
+  }
+  header.topbar h1 .sub {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: normal;
+    color: var(--gold);
+    margin-top: 2px;
+  }
+  .meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+  }
+  #refreshBtn {
+    background: var(--gold);
+    color: var(--green-dark);
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+  #refreshBtn:active { transform: scale(0.97); }
+
+  nav.tabs {
+    display: flex;
+    flex-wrap: wrap;
+    background: var(--green-dark);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .tab-btn {
+    flex: 1;
+    min-width: 140px;
+    padding: 12px 8px;
+    background: transparent;
+    border: none;
+    color: #cfe8d8;
+    font-size: 0.95rem;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+  }
+  .tab-btn.active {
+    color: #fff;
+    border-bottom: 3px solid var(--gold);
+    background: rgba(255,255,255,0.06);
+  }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 14px; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  select {
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid #c9d4cd;
+    font-size: 0.95rem;
+    background: #fff;
+  }
+  .filters label { font-size: 0.9rem; color: var(--muted); }
+
+  .date-heading {
+    margin: 18px 0 8px;
+    font-weight: bold;
+    color: var(--green-dark);
+    border-left: 4px solid var(--gold);
+    padding-left: 8px;
+  }
+  .match-card {
+    background: var(--card);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+  }
+  .match-time {
+    min-width: 56px;
+    font-weight: bold;
+    color: var(--green-dark);
+    font-size: 0.95rem;
+  }
+  .match-teams {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 0.95rem;
+    min-width: 220px;
+  }
+  .match-teams .team {
+    flex: 1;
+    text-align: right;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+  .match-teams .team.away {
+    justify-content: flex-start;
+    text-align: left;
+  }
+  .match-teams .score {
+    font-weight: bold;
+    background: var(--bg);
+    border-radius: 6px;
+    padding: 4px 10px;
+    min-width: 60px;
+    text-align: center;
+  }
+  .flag { font-size: 1.2rem; }
+  .match-status {
+    font-size: 0.8rem;
+    color: var(--muted);
+    min-width: 90px;
+    text-align: center;
+  }
+  .match-status.live {
+    color: var(--live);
+    font-weight: bold;
+  }
+  .live-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--live);
+    margin-right: 4px;
+    animation: pulse 1.2s infinite;
+  }
+  @keyframes pulse {
+    0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; }
+  }
+  .match-meta {
+    width: 100%;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  .groups-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 12px;
+  }
+  .group-card {
+    background: var(--card);
+    border-radius: 8px;
+    padding: 10px 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .group-card h3 { margin: 0 0 6px; color: var(--green-dark); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th, td { padding: 4px 4px; text-align: center; }
+  th { color: var(--muted); font-weight: normal; border-bottom: 1px solid #e2e7e4; }
+  td.team-name { text-align: left; }
+  tr.rank-1, tr.rank-2 { background: var(--qualify); }
+  tr.rank-3 { background: var(--maybe); }
+  tr.rank-4 { background: var(--out); }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    font-size: 0.8rem;
+    margin-bottom: 12px;
+    color: var(--muted);
+  }
+  .legend span { display: flex; align-items: center; gap: 6px; }
+  .legend .box { width: 14px; height: 14px; border-radius: 3px; display: inline-block; }
+  .box.qualify { background: var(--qualify); border: 1px solid var(--qualify-border); }
+  .box.maybe { background: var(--maybe); border: 1px solid var(--maybe-border); }
+  .box.out { background: var(--out); border: 1px solid var(--out-border); }
+
+  .note {
+    background: #fff;
+    border-left: 4px solid var(--gold);
+    padding: 8px 12px;
+    margin-bottom: 12px;
+    font-size: 0.88rem;
+    border-radius: 6px;
+  }
+
+  .qualified-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .qualified-item {
+    background: var(--qualify);
+    border: 1px solid var(--qualify-border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .qualified-item.maybe { background: var(--maybe); border-color: var(--maybe-border); }
+
+  #teamSchedule .match-card { flex-direction: row; }
+  .team-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.2rem;
+    margin: 12px 0;
+    font-weight: bold;
+    color: var(--green-dark);
+  }
+
+  .error-banner {
+    background: #fde2e2;
+    border: 1px solid var(--out-border);
+    color: #7a1f1f;
+    padding: 10px 14px;
+    margin: 10px auto;
+    max-width: 1100px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+  }
+
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.78rem;
+    padding: 20px;
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <h1>⚽ ฟุตบอลโลก 2026<span class="sub">ตารางการแข่งขัน ผลการแข่งขัน และทีมผ่านเข้ารอบ • เวลาประเทศไทย</span></h1>
+  <div class="meta">
+    <span id="lastUpdated">กำลังโหลดข้อมูล...</span>
+    <button id="refreshBtn">รีเฟรช</button>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="schedule">ตารางการแข่งขัน</button>
+  <button class="tab-btn" data-tab="standings">ตารางคะแนนกลุ่ม</button>
+  <button class="tab-btn" data-tab="qualified">สรุปทีมผ่านเข้ารอบ</button>
+  <button class="tab-btn" data-tab="teams">ตารางแข่งรายทีม</button>
+</nav>
+
+<div id="errorBanner" class="error-banner" hidden></div>
+
+<main>
+  <section id="tab-schedule" class="tab-content active">
+    <div class="filters">
+      <select id="scheduleFilter">
+        <option value="all">ทุกคู่การแข่งขัน</option>
+      </select>
+      <label><input type="checkbox" id="liveOnly"> แสดงเฉพาะนัดที่กำลังแข่งสด</label>
+    </div>
+    <div id="scheduleList"></div>
+  </section>
+
+  <section id="tab-standings" class="tab-content">
+    <div class="legend">
+      <span><span class="box qualify"></span> อันดับ 1-2: ผ่านเข้ารอบ 32 ทีมโดยตรง</span>
+      <span><span class="box maybe"></span> อันดับ 3: ลุ้นเป็น 8 อันดับ 3 ที่ดีที่สุด</span>
+      <span><span class="box out"></span> อันดับ 4: ตกรอบ</span>
+    </div>
+    <div id="standingsGrid" class="groups-grid"></div>
+  </section>
+
+  <section id="tab-qualified" class="tab-content">
+    <div id="qualifiedContent"></div>
+  </section>
+
+  <section id="tab-teams" class="tab-content">
+    <div class="filters">
+      <select id="teamSelect">
+        <option value="">-- เลือกทีม --</option>
+      </select>
+    </div>
+    <div id="teamSchedule"></div>
+  </section>
+</main>
+
+<footer>
+  ข้อมูลตารางแข่ง/ผลการแข่งขันจาก TheSportsDB • เวลาทั้งหมดแสดงผลเป็นเวลาประเทศไทย (UTC+7)<br>
+  ข้อมูลอาจล่าช้าหรือไม่สมบูรณ์สำหรับคู่ในรอบน็อกเอาท์ที่ยังไม่ทราบทีมผู้เข้ารอบ
+</footer>
+
+<script>
+const API_BASE = 'https://www.thesportsdb.com/api/v1/json/3';
+const LEAGUE_ID = 4429;
+const SEASON = '2026';
+const MAX_ROUND = 12;
+const CACHE_KEY = 'wc2026_matches_v1';
+const CACHE_TTL_MS = 3 * 60 * 1000;
+
+const STATUS_TH = {
+  'NS': 'ยังไม่เริ่ม',
+  '1H': 'ครึ่งแรก',
+  'HT': 'พักครึ่ง',
+  '2H': 'ครึ่งหลัง',
+  'ET': 'ต่อเวลาพิเศษ',
+  'BT': 'พักก่อนต่อเวลา',
+  'P': 'จุดโทษ',
+  'FT': 'จบการแข่งขัน',
+  'AET': 'จบ (ต่อเวลาพิเศษ)',
+  'PEN': 'จบ (จุดโทษ)',
+  'PST': 'เลื่อนการแข่งขัน',
+  'CANC': 'ยกเลิก',
+  'ABD': 'ยุติการแข่งขัน',
+  'SUSP': 'หยุดการแข่งขันชั่วคราว',
+  'TBD': 'รอประกาศ',
+  '': 'รอประกาศ'
+};
+const LIVE_STATUSES = new Set(['1H', 'HT', '2H', 'ET', 'BT', 'P']);
+const FINISHED_STATUSES = new Set(['FT', 'AET', 'PEN']);
+
+const FLAGS = {
+  'Mexico': '🇲🇽', 'South Africa': '🇿🇦', 'South Korea': '🇰🇷', 'Czech Republic': '🇨🇿',
+  'Canada': '🇨🇦', 'Bosnia-Herzegovina': '🇧🇦', 'USA': '🇺🇸', 'Paraguay': '🇵🇾',
+  'Brazil': '🇧🇷', 'Morocco': '🇲🇦', 'Qatar': '🇶🇦', 'Switzerland': '🇨🇭',
+  'Haiti': '🇭🇹', 'Scotland': '🏴', 'Germany': '🇩🇪', 'Curaçao': '🇨🇼', 'Curacao': '🇨🇼',
+  'Ivory Coast': '🇨🇮', "Côte d'Ivoire": '🇨🇮', 'Ecuador': '🇪🇨', 'Netherlands': '🇳🇱',
+  'Japan': '🇯🇵', 'Australia': '🇦🇺', 'Turkey': '🇹🇷', 'Türkiye': '🇹🇷', 'Belgium': '🇧🇪',
+  'Egypt': '🇪🇬', 'Saudi Arabia': '🇸🇦', 'Uruguay': '🇺🇾', 'Spain': '🇪🇸',
+  'Cape Verde': '🇨🇻', 'Sweden': '🇸🇪', 'Tunisia': '🇹🇳', 'Iran': '🇮🇷',
+  'New Zealand': '🇳🇿', 'France': '🇫🇷', 'Senegal': '🇸🇳', 'Iraq': '🇮🇶',
+  'Norway': '🇳🇴', 'Argentina': '🇦🇷', 'Algeria': '🇩🇿', 'Austria': '🇦🇹',
+  'Jordan': '🇯🇴', 'England': '🏴', 'Croatia': '🇭🇷', 'Ghana': '🇬🇭',
+  'Panama': '🇵🇦', 'Portugal': '🇵🇹', 'DR Congo': '🇨🇩', 'Uzbekistan': '🇺🇿',
+  'Colombia': '🇨🇴'
+};
+
+const THAI_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const THAI_DAYS = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+
+let allMatches = [];
+let roundLabels = {};
+
+function pad(n) { return String(n).padStart(2, '0'); }
+
+function flagFor(team) {
+  return FLAGS[team] || '⚽';
+}
+
+function toBangkok(dateEvent, strTime) {
+  const time = strTime || '00:00:00';
+  const utcMs = Date.parse(`${dateEvent}T${time}Z`);
+  const bkk = new Date(utcMs + 7 * 3600 * 1000);
+  return {
+    year: bkk.getUTCFullYear(),
+    month: bkk.getUTCMonth(),
+    day: bkk.getUTCDate(),
+    hour: bkk.getUTCHours(),
+    minute: bkk.getUTCMinutes(),
+    weekday: bkk.getUTCDay(),
+    dateKey: `${bkk.getUTCFullYear()}-${pad(bkk.getUTCMonth() + 1)}-${pad(bkk.getUTCDate())}`,
+    sortMs: utcMs
+  };
+}
+
+function formatDateHeading(b) {
+  return `วัน${THAI_DAYS[b.weekday]}ที่ ${b.day} ${THAI_MONTHS[b.month]} ${b.year}`;
+}
+
+function formatTime(b) {
+  return `${pad(b.hour)}:${pad(b.minute)}`;
+}
+
+// ---------- Data loading ----------
+
+async function fetchRound(r) {
+  const res = await fetch(`${API_BASE}/eventsround.php?id=${LEAGUE_ID}&r=${r}&s=${SEASON}`);
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const json = await res.json();
+  return json.events || [];
+}
+
+async function fetchAllMatches() {
+  const results = await Promise.all(
+    Array.from({ length: MAX_ROUND }, (_, i) => fetchRound(i + 1).catch(() => null))
+  );
+  const matches = results.filter(Boolean).flat();
+  if (!matches.length) throw new Error('no data');
+  return matches;
+}
+
+function readCache() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (e) {
+    return null;
+  }
+}
+
+function writeCache(data) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts: Date.now() }));
+  } catch (e) {}
+}
+
+async function loadMatches(force) {
+  const cached = readCache();
+  if (!force && cached && Date.now() - cached.ts < CACHE_TTL_MS) {
+    return cached.data;
+  }
+  try {
+    const data = await fetchAllMatches();
+    writeCache(data);
+    showError(null);
+    return data;
+  } catch (e) {
+    if (cached) {
+      showError('ไม่สามารถโหลดข้อมูลล่าสุดได้ กำลังแสดงข้อมูลที่บันทึกไว้ล่าสุด (' + new Date(cached.ts).toLocaleString('th-TH') + ')');
+      return cached.data;
+    }
+    showError('ไม่สามารถโหลดข้อมูลได้ หากเปิดไฟล์นี้โดยตรง (file://) เบราว์เซอร์อาจบล็อกการเรียก API โปรดเปิดผ่านเว็บเซิร์ฟเวอร์ในเครื่อง (เช่น "npx serve ." หรือ Live Server) แล้วลองรีเฟรชอีกครั้ง');
+    return [];
+  }
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorBanner');
+  if (!msg) { el.hidden = true; return; }
+  el.hidden = false;
+  el.textContent = msg;
+}
+
+// ---------- Round labels (knockout stage naming) ----------
+
+function computeRoundLabels(matches) {
+  const koByRound = {};
+  matches.forEach(m => {
+    if (!/^[A-Z]$/.test(m.strGroup || '')) {
+      (koByRound[m.intRound] = koByRound[m.intRound] || []).push(m);
+    }
+  });
+  const labels = {};
+  const singleRounds = [];
+  Object.entries(koByRound).forEach(([round, ms]) => {
+    const count = ms.length;
+    if (count >= 16) labels[round] = 'รอบ 32 ทีมสุดท้าย';
+    else if (count >= 8) labels[round] = 'รอบ 16 ทีมสุดท้าย';
+    else if (count >= 4) labels[round] = 'รอบก่อนรองชนะเลิศ';
+    else if (count >= 2) labels[round] = 'รอบรองชนะเลิศ';
+    else singleRounds.push(round);
+  });
+  if (singleRounds.length) {
+    const sorted = singleRounds.sort((a, b) => {
+      const da = Math.min(...koByRound[a].map(m => toBangkok(m.dateEvent, m.strTime).sortMs));
+      const db = Math.min(...koByRound[b].map(m => toBangkok(m.dateEvent, m.strTime).sortMs));
+      return da - db;
+    });
+    if (sorted.length === 1) {
+      labels[sorted[0]] = 'นัดชิงชนะเลิศ';
+    } else {
+      labels[sorted[0]] = 'นัดชิงอันดับที่ 3';
+      labels[sorted[sorted.length - 1]] = 'นัดชิงชนะเลิศ';
+    }
+  }
+  return labels;
+}
+
+function getMatchLabel(m) {
+  if (/^[A-Z]$/.test(m.strGroup || '')) {
+    return `รอบแบ่งกลุ่ม กลุ่ม ${m.strGroup} • นัดที่ ${m.intRound}`;
+  }
+  return roundLabels[m.intRound] || `รอบที่ ${m.intRound}`;
+}
+
+// ---------- Standings ----------
+
+function getGroupLetters(matches) {
+  const set = new Set();
+  matches.forEach(m => { if (/^[A-Z]$/.test(m.strGroup || '')) set.add(m.strGroup); });
+  return Array.from(set).sort();
+}
+
+function computeStandings(matches) {
+  const groups = {};
+  matches.forEach(m => {
+    const g = m.strGroup;
+    if (!/^[A-Z]$/.test(g || '')) return;
+    groups[g] = groups[g] || {};
+    [m.strHomeTeam, m.strAwayTeam].forEach(t => {
+      if (!groups[g][t]) {
+        groups[g][t] = { team: t, P: 0, W: 0, D: 0, L: 0, GF: 0, GA: 0, GD: 0, Pts: 0 };
+      }
+    });
+    if (FINISHED_STATUSES.has(m.strStatus) && m.intHomeScore !== null && m.intAwayScore !== null) {
+      const hs = parseInt(m.intHomeScore, 10);
+      const as = parseInt(m.intAwayScore, 10);
+      const home = groups[g][m.strHomeTeam];
+      const away = groups[g][m.strAwayTeam];
+      home.P++; away.P++;
+      home.GF += hs; home.GA += as;
+      away.GF += as; away.GA += hs;
+      if (hs > as) { home.W++; home.Pts += 3; away.L++; }
+      else if (hs < as) { away.W++; away.Pts += 3; home.L++; }
+      else { home.D++; away.D++; home.Pts++; away.Pts++; }
+    }
+  });
+  Object.keys(groups).forEach(g => {
+    Object.values(groups[g]).forEach(t => { t.GD = t.GF - t.GA; });
+    groups[g] = Object.values(groups[g]).sort((a, b) =>
+      b.Pts - a.Pts || b.GD - a.GD || b.GF - a.GF || a.team.localeCompare(b.team)
+    );
+  });
+  return groups;
+}
+
+// ---------- Rendering: schedule ----------
+
+function renderScheduleFilters() {
+  const sel = document.getElementById('scheduleFilter');
+  sel.innerHTML = '<option value="all">ทุกคู่การแข่งขัน</option>';
+  const groupLetters = getGroupLetters(allMatches);
+  if (groupLetters.length) {
+    const optgroup = document.createElement('optgroup');
+    optgroup.label = 'รอบแบ่งกลุ่ม';
+    groupLetters.forEach(g => {
+      const opt = document.createElement('option');
+      opt.value = 'group-' + g;
+      opt.textContent = 'กลุ่ม ' + g;
+      optgroup.appendChild(opt);
+    });
+    sel.appendChild(optgroup);
+  }
+  const koLabels = Array.from(new Set(Object.values(roundLabels)));
+  if (koLabels.length) {
+    const optgroup = document.createElement('optgroup');
+    optgroup.label = 'รอบน็อกเอาท์';
+    koLabels.forEach(label => {
+      const opt = document.createElement('option');
+      opt.value = 'ko-' + label;
+      opt.textContent = label;
+      optgroup.appendChild(opt);
+    });
+    sel.appendChild(optgroup);
+  }
+}
+
+function matchPassesFilter(m, filterVal, liveOnly) {
+  if (liveOnly && !LIVE_STATUSES.has(m.strStatus)) return false;
+  if (filterVal === 'all') return true;
+  if (filterVal.startsWith('group-')) {
+    return m.strGroup === filterVal.slice(6);
+  }
+  if (filterVal.startsWith('ko-')) {
+    return getMatchLabel(m) === filterVal.slice(3);
+  }
+  return true;
+}
+
+function renderMatchCard(m) {
+  const b = toBangkok(m.dateEvent, m.strTime);
+  const status = m.strStatus || 'NS';
+  const isLive = LIVE_STATUSES.has(status);
+  const isFinished = FINISHED_STATUSES.has(status);
+  const hasScore = m.intHomeScore !== null && m.intAwayScore !== null && (isLive || isFinished);
+  const scoreText = hasScore ? `${m.intHomeScore} - ${m.intAwayScore}` : 'VS';
+
+  const div = document.createElement('div');
+  div.className = 'match-card';
+  div.innerHTML = `
+    <div class="match-time">${formatTime(b)}</div>
+    <div class="match-teams">
+      <div class="team home"><span>${m.strHomeTeam}</span><span class="flag">${flagFor(m.strHomeTeam)}</span></div>
+      <div class="score">${scoreText}</div>
+      <div class="team away"><span class="flag">${flagFor(m.strAwayTeam)}</span><span>${m.strAwayTeam}</span></div>
+    </div>
+    <div class="match-status ${isLive ? 'live' : ''}">${isLive ? '<span class="live-dot"></span>' : ''}${STATUS_TH[status] || status}</div>
+    <div class="match-meta">${getMatchLabel(m)} • ${m.strVenue || ''}${m.strCity ? ' (' + m.strCity + ')' : ''}</div>
+  `;
+  return div;
+}
+
+function renderSchedule() {
+  const list = document.getElementById('scheduleList');
+  list.innerHTML = '';
+  const filterVal = document.getElementById('scheduleFilter').value;
+  const liveOnly = document.getElementById('liveOnly').checked;
+
+  const filtered = allMatches
+    .map(m => ({ m, b: toBangkok(m.dateEvent, m.strTime) }))
+    .filter(({ m }) => matchPassesFilter(m, filterVal, liveOnly))
+    .sort((a, b) => a.b.sortMs - b.b.sortMs);
+
+  if (!filtered.length) {
+    list.innerHTML = '<p>ไม่พบคู่การแข่งขันตามเงื่อนไขที่เลือก</p>';
+    return;
+  }
+
+  let lastDateKey = null;
+  filtered.forEach(({ m, b }) => {
+    if (b.dateKey !== lastDateKey) {
+      const h = document.createElement('div');
+      h.className = 'date-heading';
+      h.textContent = formatDateHeading(b);
+      list.appendChild(h);
+      lastDateKey = b.dateKey;
+    }
+    list.appendChild(renderMatchCard(m));
+  });
+}
+
+// ---------- Rendering: standings ----------
+
+function renderStandings() {
+  const grid = document.getElementById('standingsGrid');
+  grid.innerHTML = '';
+  const groups = computeStandings(allMatches);
+  const letters = Object.keys(groups).sort();
+
+  if (!letters.length) {
+    grid.innerHTML = '<p>ยังไม่มีข้อมูลตารางคะแนน</p>';
+    return;
+  }
+
+  letters.forEach(g => {
+    const card = document.createElement('div');
+    card.className = 'group-card';
+    const rows = groups[g].map((t, idx) => `
+      <tr class="rank-${idx + 1}">
+        <td>${idx + 1}</td>
+        <td class="team-name">${flagFor(t.team)} ${t.team}</td>
+        <td>${t.P}</td>
+        <td>${t.W}</td>
+        <td>${t.D}</td>
+        <td>${t.L}</td>
+        <td>${t.GF}</td>
+        <td>${t.GA}</td>
+        <td>${t.GD}</td>
+        <td><b>${t.Pts}</b></td>
+      </tr>
+    `).join('');
+    card.innerHTML = `
+      <h3>กลุ่ม ${g}</h3>
+      <table>
+        <thead>
+          <tr><th>#</th><th style="text-align:left">ทีม</th><th>แข่ง</th><th>ชนะ</th><th>เสมอ</th><th>แพ้</th><th>ยิง</th><th>เสีย</th><th>+/-</th><th>คะแนน</th></tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+// ---------- Rendering: qualified summary ----------
+
+function renderQualified() {
+  const el = document.getElementById('qualifiedContent');
+  el.innerHTML = '';
+  const groups = computeStandings(allMatches);
+  const letters = Object.keys(groups).sort();
+
+  if (!letters.length) {
+    el.innerHTML = '<p>ยังไม่มีข้อมูลสำหรับสรุปทีมผ่านเข้ารอบ</p>';
+    return;
+  }
+
+  const groupMatchCount = {};
+  allMatches.forEach(m => {
+    if (/^[A-Z]$/.test(m.strGroup || '') && FINISHED_STATUSES.has(m.strStatus)) {
+      groupMatchCount[m.strGroup] = (groupMatchCount[m.strGroup] || 0) + 1;
+    }
+  });
+  const totalFinished = Object.values(groupMatchCount).reduce((a, b) => a + b, 0);
+  const totalGroupMatches = letters.length * 6;
+  const complete = totalFinished >= totalGroupMatches;
+
+  const note = document.createElement('div');
+  note.className = 'note';
+  note.innerHTML = `<b>เงื่อนไขผ่านเข้ารอบ:</b> อันดับ 1 และ 2 ของแต่ละกลุ่ม (รวม ${letters.length * 2} ทีม) ผ่านเข้ารอบ 32 ทีมโดยตรง
+    และทีมอันดับ 3 ที่มีผลงานดีที่สุด 8 ทีม (จาก ${letters.length} กลุ่ม) จะได้สิทธิ์ผ่านเข้ารอบเพิ่มอีก 8 ทีม รวมเป็น 32 ทีมสุดท้าย<br>
+    <b>สถานะรอบแบ่งกลุ่ม:</b> แข่งจบแล้ว ${totalFinished} / ${totalGroupMatches} นัด
+    ${complete ? ' — ผลตารางด้านล่างเป็นผลสรุปสุดท้าย' : ' — ผลด้านล่างเป็นผลปัจจุบัน อาจเปลี่ยนแปลงได้จนกว่ารอบแบ่งกลุ่มจะจบ'}`;
+  el.appendChild(note);
+
+  const directQualifiers = [];
+  const thirdPlaced = [];
+  letters.forEach(g => {
+    const standing = groups[g];
+    if (standing[0]) directQualifiers.push({ ...standing[0], group: g });
+    if (standing[1]) directQualifiers.push({ ...standing[1], group: g });
+    if (standing[2]) thirdPlaced.push({ ...standing[2], group: g });
+  });
+
+  thirdPlaced.sort((a, b) => b.Pts - a.Pts || b.GD - a.GD || b.GF - a.GF || a.team.localeCompare(b.team));
+  const bestThirds = thirdPlaced.slice(0, 8);
+  const bestThirdNames = new Set(bestThirds.map(t => t.team + '|' + t.group));
+
+  const h2a = document.createElement('h3');
+  h2a.textContent = `ทีมที่ผ่านเข้ารอบโดยตรง (อันดับ 1-2 ของแต่ละกลุ่ม)`;
+  el.appendChild(h2a);
+  const listA = document.createElement('div');
+  listA.className = 'qualified-list';
+  directQualifiers.forEach(t => {
+    const item = document.createElement('div');
+    item.className = 'qualified-item';
+    item.innerHTML = `<span class="flag">${flagFor(t.team)}</span> <span>${t.team}</span> <small style="margin-left:auto;color:var(--muted)">กลุ่ม ${t.group}</small>`;
+    listA.appendChild(item);
+  });
+  el.appendChild(listA);
+
+  const h2b = document.createElement('h3');
+  h2b.textContent = 'อันดับ 3 ของแต่ละกลุ่ม (จัดอันดับ 8 ทีมที่ดีที่สุดเพื่อผ่านเข้ารอบ)';
+  el.appendChild(h2b);
+  const listB = document.createElement('div');
+  listB.className = 'qualified-list';
+  thirdPlaced.forEach((t, idx) => {
+    const qualifies = bestThirdNames.has(t.team + '|' + t.group);
+    const item = document.createElement('div');
+    item.className = 'qualified-item' + (qualifies ? '' : ' maybe');
+    item.style.background = qualifies ? 'var(--qualify)' : 'var(--out)';
+    item.style.borderColor = qualifies ? 'var(--qualify-border)' : 'var(--out-border)';
+    item.innerHTML = `<span class="flag">${flagFor(t.team)}</span> <span>${t.team}</span>
+      <small style="margin-left:auto;color:var(--muted)">กลุ่ม ${t.group} • ${t.Pts} แต้ม • #${idx + 1}</small>`;
+    listB.appendChild(item);
+  });
+  el.appendChild(listB);
+
+  const h2c = document.createElement('h3');
+  h2c.textContent = `รายชื่อ 32 ทีมสุดท้าย${complete ? '' : ' (ปัจจุบัน)'}`;
+  el.appendChild(h2c);
+  const listC = document.createElement('div');
+  listC.className = 'qualified-list';
+  const all32 = directQualifiers.concat(bestThirds).sort((a, b) => a.group.localeCompare(b.group) || a.team.localeCompare(b.team));
+  all32.forEach(t => {
+    const item = document.createElement('div');
+    item.className = 'qualified-item';
+    item.innerHTML = `<span class="flag">${flagFor(t.team)}</span> <span>${t.team}</span> <small style="margin-left:auto;color:var(--muted)">กลุ่ม ${t.group}</small>`;
+    listC.appendChild(item);
+  });
+  el.appendChild(listC);
+}
+
+// ---------- Rendering: per-team schedule ----------
+
+function renderTeamSelect() {
+  const sel = document.getElementById('teamSelect');
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">-- เลือกทีม --</option>';
+  const groupLetters = getGroupLetters(allMatches);
+  groupLetters.forEach(g => {
+    const teams = new Set();
+    allMatches.forEach(m => {
+      if (m.strGroup === g) {
+        teams.add(m.strHomeTeam);
+        teams.add(m.strAwayTeam);
+      }
+    });
+    const optgroup = document.createElement('optgroup');
+    optgroup.label = 'กลุ่ม ' + g;
+    Array.from(teams).sort().forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t;
+      opt.textContent = `${flagFor(t)} ${t}`;
+      optgroup.appendChild(opt);
+    });
+    sel.appendChild(optgroup);
+  });
+  if (prev) sel.value = prev;
+}
+
+function renderTeamSchedule() {
+  const team = document.getElementById('teamSelect').value;
+  const el = document.getElementById('teamSchedule');
+  el.innerHTML = '';
+  if (!team) return;
+
+  const header = document.createElement('div');
+  header.className = 'team-header';
+  header.innerHTML = `<span class="flag">${flagFor(team)}</span> ${team}`;
+  el.appendChild(header);
+
+  const matches = allMatches
+    .filter(m => m.strHomeTeam === team || m.strAwayTeam === team)
+    .map(m => ({ m, b: toBangkok(m.dateEvent, m.strTime) }))
+    .sort((a, b) => a.b.sortMs - b.b.sortMs);
+
+  if (!matches.length) {
+    el.innerHTML += '<p>ไม่พบตารางการแข่งขันของทีมนี้</p>';
+    return;
+  }
+
+  let lastDateKey = null;
+  matches.forEach(({ m, b }) => {
+    if (b.dateKey !== lastDateKey) {
+      const h = document.createElement('div');
+      h.className = 'date-heading';
+      h.textContent = formatDateHeading(b);
+      el.appendChild(h);
+      lastDateKey = b.dateKey;
+    }
+    el.appendChild(renderMatchCard(m));
+  });
+}
+
+// ---------- Tabs ----------
+
+function setupTabs() {
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(s => s.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+}
+
+// ---------- Main ----------
+
+function renderAll() {
+  roundLabels = computeRoundLabels(allMatches);
+  renderScheduleFilters();
+  renderSchedule();
+  renderStandings();
+  renderQualified();
+  renderTeamSelect();
+  renderTeamSchedule();
+  document.getElementById('lastUpdated').textContent =
+    'อัปเดตล่าสุด: ' + new Date().toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' });
+}
+
+async function refresh(force) {
+  document.getElementById('lastUpdated').textContent = 'กำลังโหลดข้อมูล...';
+  const data = await loadMatches(force);
+  if (data.length) allMatches = data;
+  renderAll();
+}
+
+document.getElementById('refreshBtn').addEventListener('click', () => refresh(true));
+document.getElementById('scheduleFilter').addEventListener('change', renderSchedule);
+document.getElementById('liveOnly').addEventListener('change', renderSchedule);
+document.getElementById('teamSelect').addEventListener('change', renderTeamSchedule);
+
+setupTabs();
+refresh(false);
+setInterval(() => refresh(true), CACHE_TTL_MS);
+</script>
+</body>
+</html>
