@@ -363,6 +363,7 @@
     col.col-wdl, th.col-wdl, td.col-wdl { display: none; }
     td.team-name .flag, th .flag { width: 18px; height: 13px; }
     td.team-name { gap: 4px; }
+    .form-badge { width: 18px; height: 18px; font-size: 0.6rem; }
   }
 
   .bracket-wrap {
@@ -427,6 +428,34 @@
     margin-top: 6px;
     border-top: 1px solid var(--card-border);
     padding-top: 6px;
+  }
+
+  .form-badges {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+  }
+  .form-badge {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.68rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .form-badge.W { background: var(--qualify); border: 1px solid var(--qualify-border); color: var(--text); }
+  .form-badge.D { background: var(--card); border: 1px solid var(--card-border); color: var(--muted); }
+  .form-badge.L { background: var(--out); border: 1px solid var(--out-border); color: var(--text); }
+
+  #favoritesBody tr:nth-child(-n+5) {
+    background: var(--gold-soft);
+  }
+  #favoritesBody td.rank {
+    font-weight: 700;
+    color: var(--gold-bright);
   }
 
   .legend {
@@ -535,6 +564,7 @@
 <nav class="tabs">
   <button class="tab-btn active" data-tab="schedule">📅 ตารางการแข่งขัน</button>
   <button class="tab-btn" data-tab="standings">🏆 ตารางคะแนนกลุ่ม</button>
+  <button class="tab-btn" data-tab="favorites">📊 สถิติทีมเต็ง</button>
   <button class="tab-btn" data-tab="bracket">🏟️ สายน็อกเอาท์</button>
   <button class="tab-btn" data-tab="scorers">👟 ดาวซัลโว</button>
   <button class="tab-btn" data-tab="qualified">✅ สรุปทีมผ่านเข้ารอบ</button>
@@ -569,6 +599,35 @@
       <span><span class="box out"></span> อันดับ 4: ตกรอบ</span>
     </div>
     <div id="standingsGrid" class="groups-grid"></div>
+  </section>
+
+  <section id="tab-favorites" class="tab-content">
+    <div class="note" id="favoritesEmpty" hidden>
+      ยังไม่มีผลการแข่งขันที่จบลง สถิติทีมเต็งจะแสดงหลังจากมีผลการแข่งขันในรอบแบ่งกลุ่ม
+    </div>
+    <div class="note" id="favoritesNote" hidden>
+      จัดอันดับทุกทีมข้ามกลุ่มตาม <b>คะแนน</b>, <b>ผลต่างประตู</b> และ <b>ประตูที่ทำได้</b> เพื่อประเมิน "ทีมเต็ง" (5 อันดับแรกไฮไลต์สีทอง)
+      คอลัมน์ <b>ฟอร์ม</b> แสดงผล 5 นัดหลังสุด (ซ้าย = เก่าสุด, ขวา = ล่าสุด)
+    </div>
+    <div id="favoritesTableWrap" class="table-wrap" hidden>
+      <table>
+        <colgroup>
+          <col><col class="col-team"><col>
+          <col><col class="col-wdl"><col class="col-wdl"><col class="col-wdl">
+          <col class="col-gfga"><col class="col-gfga">
+          <col><col><col>
+        </colgroup>
+        <thead>
+          <tr>
+            <th>#</th><th style="text-align:left">ทีม</th><th title="กลุ่ม">กลุ่ม</th><th title="ลงเล่น">แข่ง</th>
+            <th class="col-wdl" title="ชนะ">ชนะ</th><th class="col-wdl" title="เสมอ">เสมอ</th><th class="col-wdl" title="แพ้">แพ้</th>
+            <th class="col-gfga" title="ประตูได้">ยิง</th><th class="col-gfga" title="ประตูเสีย">เสีย</th>
+            <th title="ผลต่างประตู">+/-</th><th title="คะแนน">คะแนน</th><th title="5 นัดหลังสุด">ฟอร์ม</th>
+          </tr>
+        </thead>
+        <tbody id="favoritesBody"></tbody>
+      </table>
+    </div>
   </section>
 
   <section id="tab-bracket" class="tab-content">
@@ -1029,6 +1088,78 @@ function renderStandings() {
   });
 }
 
+// ---------- Rendering: favorite teams / stats ----------
+
+function computeOverallStandings(matches) {
+  const groups = computeStandings(matches);
+  const all = [];
+  Object.keys(groups).forEach(g => {
+    groups[g].forEach(t => all.push({ ...t, group: g }));
+  });
+  all.sort((a, b) => b.Pts - a.Pts || b.GD - a.GD || b.GF - a.GF || a.team.localeCompare(b.team));
+  return all;
+}
+
+function computeForm(matches, team) {
+  return matches
+    .filter(m => FINISHED_STATUSES.has(m.strStatus) && (m.strHomeTeam === team || m.strAwayTeam === team))
+    .map(m => ({ m, b: toBangkok(m.dateEvent, m.strTime) }))
+    .sort((a, b) => a.b.sortMs - b.b.sortMs)
+    .slice(-5)
+    .map(({ m }) => {
+      const isHome = m.strHomeTeam === team;
+      const hs = parseInt(m.intHomeScore, 10);
+      const as = parseInt(m.intAwayScore, 10);
+      const own = isHome ? hs : as;
+      const opp = isHome ? as : hs;
+      if (own > opp) return 'W';
+      if (own < opp) return 'L';
+      return 'D';
+    });
+}
+
+function renderFavorites() {
+  const tbody = document.getElementById('favoritesBody');
+  const tableWrap = document.getElementById('favoritesTableWrap');
+  const note = document.getElementById('favoritesNote');
+  const empty = document.getElementById('favoritesEmpty');
+  tbody.innerHTML = '';
+
+  const overall = computeOverallStandings(allMatches).filter(t => t.P > 0);
+  if (!overall.length) {
+    tableWrap.hidden = true;
+    note.hidden = true;
+    empty.hidden = false;
+    return;
+  }
+  empty.hidden = true;
+  note.hidden = false;
+  tableWrap.hidden = false;
+
+  overall.forEach((t, idx) => {
+    const form = computeForm(allMatches, t.team);
+    const formHtml = form.length
+      ? form.map(r => `<span class="form-badge ${r}">${r}</span>`).join('')
+      : '<span style="color:var(--muted)">-</span>';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="rank">${idx + 1}</td>
+      <td class="team-name">${flagImg(t.team)} <span class="team-full">${t.team}</span></td>
+      <td>${t.group}</td>
+      <td>${t.P}</td>
+      <td class="col-wdl">${t.W}</td>
+      <td class="col-wdl">${t.D}</td>
+      <td class="col-wdl">${t.L}</td>
+      <td class="col-gfga">${t.GF}</td>
+      <td class="col-gfga">${t.GA}</td>
+      <td>${t.GD}</td>
+      <td><b>${t.Pts}</b></td>
+      <td><div class="form-badges">${formHtml}</div></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
 // ---------- Rendering: knockout bracket ----------
 
 const BRACKET_ORDER = [
@@ -1355,6 +1486,7 @@ function renderAll() {
   renderScheduleFilters();
   renderSchedule();
   renderStandings();
+  renderFavorites();
   renderBracket();
   renderQualified();
   renderTeamSelect();
