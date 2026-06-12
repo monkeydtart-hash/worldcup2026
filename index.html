@@ -338,6 +338,70 @@
     td.team-name { gap: 4px; }
   }
 
+  .bracket-wrap {
+    display: flex;
+    gap: 18px;
+    overflow-x: auto;
+    padding-bottom: 12px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .bracket-round {
+    min-width: 230px;
+    flex: 0 0 230px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .bracket-round h4 {
+    margin: 0;
+    color: var(--gold-bright);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: center;
+    letter-spacing: 0.3px;
+  }
+  .bracket-match {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-size: 0.85rem;
+    box-shadow: var(--shadow);
+  }
+  .bracket-match .bm-team {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 4px 0;
+  }
+  .bracket-match .bm-team .name {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    overflow-wrap: break-word;
+  }
+  .bracket-match .bm-team .score {
+    font-weight: 600;
+    color: var(--muted);
+    min-width: 18px;
+    text-align: right;
+  }
+  .bracket-match .bm-team.winner {
+    color: var(--text);
+    font-weight: 600;
+  }
+  .bracket-match .bm-team.winner .score {
+    color: var(--gold-bright);
+  }
+  .bracket-match .bm-meta {
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-top: 6px;
+    border-top: 1px solid var(--card-border);
+    padding-top: 6px;
+  }
+
   .legend {
     display: flex;
     flex-wrap: wrap;
@@ -444,6 +508,8 @@
 <nav class="tabs">
   <button class="tab-btn active" data-tab="schedule">📅 ตารางการแข่งขัน</button>
   <button class="tab-btn" data-tab="standings">🏆 ตารางคะแนนกลุ่ม</button>
+  <button class="tab-btn" data-tab="bracket">🏟️ สายน็อกเอาท์</button>
+  <button class="tab-btn" data-tab="scorers">👟 ดาวซัลโว</button>
   <button class="tab-btn" data-tab="qualified">✅ สรุปทีมผ่านเข้ารอบ</button>
   <button class="tab-btn" data-tab="teams">🔍 ตารางแข่งรายทีม</button>
 </nav>
@@ -468,6 +534,32 @@
       <span><span class="box out"></span> อันดับ 4: ตกรอบ</span>
     </div>
     <div id="standingsGrid" class="groups-grid"></div>
+  </section>
+
+  <section id="tab-bracket" class="tab-content">
+    <div class="note" id="bracketEmpty" hidden>
+      ยังไม่มีการประกาศโปรแกรมรอบน็อกเอาท์ จะแสดงผลที่นี่หลังจากรอบแบ่งกลุ่มสิ้นสุดและทราบคู่แข่งแล้ว
+    </div>
+    <div id="bracketWrap" class="bracket-wrap"></div>
+  </section>
+
+  <section id="tab-scorers" class="tab-content">
+    <div class="note" id="scorersEmpty" hidden>
+      ยังไม่มีข้อมูลผู้ทำประตู ข้อมูลจะปรากฏหลังจากแต่ละนัดแข่งจบลง
+    </div>
+    <div id="scorersTableWrap" class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th style="text-align:left">นักเตะ</th>
+            <th style="text-align:left">ทีม</th>
+            <th title="ประตูรวม">ประตู</th>
+          </tr>
+        </thead>
+        <tbody id="scorersBody"></tbody>
+      </table>
+    </div>
   </section>
 
   <section id="tab-qualified" class="tab-content">
@@ -496,6 +588,8 @@ const SEASON = '2026';
 const MAX_ROUND = 12;
 const CACHE_KEY = 'wc2026_matches_v1';
 const CACHE_TTL_MS = 3 * 60 * 1000;
+const GOALS_CACHE_KEY = 'wc2026_goals_v1';
+const GOAL_FETCH_DELAY_MS = 300;
 
 const STATUS_TH = {
   'NS': 'ยังไม่เริ่ม',
@@ -539,6 +633,7 @@ const THAI_DAYS = ['อาทิตย์','จันทร์','อังคา
 
 let allMatches = [];
 let roundLabels = {};
+let goalsCache = {};
 
 function pad(n) { return String(n).padStart(2, '0'); }
 
@@ -867,6 +962,74 @@ function renderStandings() {
   });
 }
 
+// ---------- Rendering: knockout bracket ----------
+
+const BRACKET_ORDER = [
+  'รอบ 32 ทีมสุดท้าย', 'รอบ 16 ทีมสุดท้าย', 'รอบก่อนรองชนะเลิศ',
+  'รอบรองชนะเลิศ', 'นัดชิงอันดับที่ 3', 'นัดชิงชนะเลิศ'
+];
+
+function renderBracketMatch(m, b) {
+  const status = m.strStatus || 'NS';
+  const isLive = LIVE_STATUSES.has(status);
+  const isFinished = FINISHED_STATUSES.has(status);
+  const hasScore = m.intHomeScore !== null && m.intAwayScore !== null && (isLive || isFinished);
+  const hs = hasScore ? parseInt(m.intHomeScore, 10) : null;
+  const as = hasScore ? parseInt(m.intAwayScore, 10) : null;
+  const homeWin = hasScore && hs > as;
+  const awayWin = hasScore && as > hs;
+
+  const div = document.createElement('div');
+  div.className = 'bracket-match';
+  div.innerHTML = `
+    <div class="bm-team ${homeWin ? 'winner' : ''}">
+      <span class="name">${flagImg(m.strHomeTeam)} ${m.strHomeTeam || 'รอประกาศ'}</span>
+      <span class="score">${hasScore ? hs : '-'}</span>
+    </div>
+    <div class="bm-team ${awayWin ? 'winner' : ''}">
+      <span class="name">${flagImg(m.strAwayTeam)} ${m.strAwayTeam || 'รอประกาศ'}</span>
+      <span class="score">${hasScore ? as : '-'}</span>
+    </div>
+    <div class="bm-meta">${formatDateHeading(b)} • ${formatTime(b)} น. • ${STATUS_TH[status] || status}</div>
+  `;
+  return div;
+}
+
+function renderBracket() {
+  const wrap = document.getElementById('bracketWrap');
+  const empty = document.getElementById('bracketEmpty');
+  wrap.innerHTML = '';
+
+  const koMatches = allMatches.filter(m => !/^[A-Z]$/.test(m.strGroup || ''));
+  if (!koMatches.length) {
+    empty.hidden = false;
+    return;
+  }
+  empty.hidden = true;
+
+  const byLabel = {};
+  koMatches.forEach(m => {
+    const label = roundLabels[m.intRound] || `รอบที่ ${m.intRound}`;
+    (byLabel[label] = byLabel[label] || []).push(m);
+  });
+
+  const order = BRACKET_ORDER.filter(l => byLabel[l]);
+  Object.keys(byLabel).forEach(l => { if (!order.includes(l)) order.push(l); });
+
+  order.forEach(label => {
+    const col = document.createElement('div');
+    col.className = 'bracket-round';
+    const h = document.createElement('h4');
+    h.textContent = label;
+    col.appendChild(h);
+    byLabel[label]
+      .map(m => ({ m, b: toBangkok(m.dateEvent, m.strTime) }))
+      .sort((a, b) => a.b.sortMs - b.b.sortMs)
+      .forEach(({ m, b }) => col.appendChild(renderBracketMatch(m, b)));
+    wrap.appendChild(col);
+  });
+}
+
 // ---------- Rendering: qualified summary ----------
 
 function renderQualified() {
@@ -956,6 +1119,92 @@ function renderQualified() {
   el.appendChild(listC);
 }
 
+// ---------- Top scorers ----------
+
+function readGoalsCache() {
+  try {
+    const raw = localStorage.getItem(GOALS_CACHE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function writeGoalsCache() {
+  try {
+    localStorage.setItem(GOALS_CACHE_KEY, JSON.stringify(goalsCache));
+  } catch (e) {}
+}
+
+async function fetchEventGoals(idEvent) {
+  const res = await fetch(`${API_BASE}/lookuptimeline.php?id=${idEvent}`);
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const json = await res.json();
+  const timeline = json.timeline || [];
+  return timeline
+    .filter(t => t.strTimeline === 'Goal' && !/own goal/i.test(t.strTimelineDetail || ''))
+    .map(t => ({ player: t.strPlayer, team: t.strTeam, time: t.intTime }));
+}
+
+async function ensureGoalscorers(matches) {
+  const finished = matches.filter(m =>
+    FINISHED_STATUSES.has(m.strStatus) &&
+    (parseInt(m.intHomeScore, 10) > 0 || parseInt(m.intAwayScore, 10) > 0)
+  );
+  let updated = false;
+  for (const m of finished) {
+    if (goalsCache[m.idEvent]) continue;
+    try {
+      goalsCache[m.idEvent] = await fetchEventGoals(m.idEvent);
+      updated = true;
+      await new Promise(r => setTimeout(r, GOAL_FETCH_DELAY_MS));
+    } catch (e) {
+      // skip on failure, retry on next refresh
+    }
+  }
+  if (updated) writeGoalsCache();
+  return updated;
+}
+
+function renderScorers() {
+  const tbody = document.getElementById('scorersBody');
+  const empty = document.getElementById('scorersEmpty');
+  const tableWrap = document.getElementById('scorersTableWrap');
+  tbody.innerHTML = '';
+
+  const tally = {};
+  Object.values(goalsCache).forEach(goals => {
+    goals.forEach(g => {
+      const key = g.player + '|' + g.team;
+      tally[key] = tally[key] || { player: g.player, team: g.team, goals: 0 };
+      tally[key].goals++;
+    });
+  });
+
+  const rows = Object.values(tally).sort((a, b) =>
+    b.goals - a.goals || a.player.localeCompare(b.player)
+  );
+
+  if (!rows.length) {
+    empty.hidden = false;
+    tableWrap.hidden = true;
+    return;
+  }
+  empty.hidden = true;
+  tableWrap.hidden = false;
+
+  rows.forEach((r, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${idx + 1}</td>
+      <td class="team-name"><span class="team-full">${r.player}</span></td>
+      <td class="team-name">${flagImg(r.team)} <span class="team-full">${r.team}</span></td>
+      <td><b>${r.goals}</b></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
 // ---------- Rendering: per-team schedule ----------
 
 function renderTeamSelect() {
@@ -1038,11 +1287,17 @@ function renderAll() {
   renderScheduleFilters();
   renderSchedule();
   renderStandings();
+  renderBracket();
   renderQualified();
   renderTeamSelect();
   renderTeamSchedule();
+  renderScorers();
   document.getElementById('lastUpdated').textContent =
     'อัปเดตล่าสุด: ' + new Date().toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' });
+
+  ensureGoalscorers(allMatches).then(updated => {
+    if (updated) renderScorers();
+  });
 }
 
 async function refresh(force) {
@@ -1057,6 +1312,7 @@ document.getElementById('scheduleFilter').addEventListener('change', renderSched
 document.getElementById('liveOnly').addEventListener('change', renderSchedule);
 document.getElementById('teamSelect').addEventListener('change', renderTeamSchedule);
 
+goalsCache = readGoalsCache();
 setupTabs();
 refresh(false);
 setInterval(() => refresh(true), CACHE_TTL_MS);
