@@ -173,6 +173,33 @@
     height: 1px;
     background: var(--card-border);
   }
+
+  .today-section {
+    max-width: 1140px;
+    margin: 20px auto 0;
+    padding: 0 16px;
+  }
+  .today-heading {
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--gold-bright);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    letter-spacing: 0.3px;
+    margin-bottom: 12px;
+  }
+  .today-heading .badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, var(--gold-bright), var(--gold));
+    color: #2a200c;
+    border-radius: 999px;
+    padding: 4px 12px;
+  }
+  .today-section .match-card {
+    border-color: var(--gold);
+  }
   .match-card {
     background: var(--card);
     border: 1px solid var(--card-border);
@@ -516,6 +543,14 @@
 
 <div id="errorBanner" class="error-banner" hidden></div>
 
+<section id="todaySection" class="today-section" hidden>
+  <div class="today-heading">
+    📍 การแข่งขันวันนี้ • <span id="todayDate"></span>
+    <span class="badge" id="todayLiveBadge" hidden>กำลังแข่งสด</span>
+  </div>
+  <div id="todayMatches"></div>
+</section>
+
 <main>
   <section id="tab-schedule" class="tab-content active">
     <div class="filters">
@@ -661,6 +696,12 @@ function toBangkok(dateEvent, strTime) {
 
 function formatDateHeading(b) {
   return `วัน${THAI_DAYS[b.weekday]}ที่ ${b.day} ${THAI_MONTHS[b.month]} ${b.year}`;
+}
+
+function getTodayDateKey() {
+  const now = new Date();
+  const bkk = new Date(now.getTime() + 7 * 3600 * 1000);
+  return `${bkk.getUTCFullYear()}-${pad(bkk.getUTCMonth() + 1)}-${pad(bkk.getUTCDate())}`;
 }
 
 function formatTime(b) {
@@ -904,6 +945,32 @@ function renderSchedule() {
     }
     list.appendChild(renderMatchCard(m));
   });
+}
+
+// ---------- Rendering: today's matches ----------
+
+function renderToday() {
+  const section = document.getElementById('todaySection');
+  const list = document.getElementById('todayMatches');
+  const dateEl = document.getElementById('todayDate');
+  const liveBadge = document.getElementById('todayLiveBadge');
+  list.innerHTML = '';
+
+  const todayKey = getTodayDateKey();
+  const todays = allMatches
+    .map(m => ({ m, b: toBangkok(m.dateEvent, m.strTime) }))
+    .filter(({ b }) => b.dateKey === todayKey)
+    .sort((a, b) => a.b.sortMs - b.b.sortMs);
+
+  if (!todays.length) {
+    section.hidden = true;
+    return;
+  }
+
+  section.hidden = false;
+  dateEl.textContent = formatDateHeading(todays[0].b);
+  liveBadge.hidden = !todays.some(({ m }) => LIVE_STATUSES.has(m.strStatus || 'NS'));
+  todays.forEach(({ m }) => list.appendChild(renderMatchCard(m)));
 }
 
 // ---------- Rendering: standings ----------
@@ -1284,6 +1351,7 @@ function setupTabs() {
 
 function renderAll() {
   roundLabels = computeRoundLabels(allMatches);
+  renderToday();
   renderScheduleFilters();
   renderSchedule();
   renderStandings();
