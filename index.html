@@ -4,146 +4,209 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ตารางฟุตบอลโลก 2026 (เวลาไทย)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap">
 <style>
   :root {
-    --green: #0a6b3a;
-    --green-dark: #064a28;
-    --gold: #ffd24a;
-    --bg: #f3f5f4;
-    --card: #ffffff;
-    --text: #1c2b22;
-    --muted: #6b7a72;
-    --live: #e63946;
-    --qualify: #d6f5df;
-    --qualify-border: #34a853;
-    --maybe: #fff6d6;
-    --maybe-border: #f4b400;
-    --out: #fde2e2;
-    --out-border: #e63946;
+    --green: #1b2233;
+    --green-dark: #0b0e16;
+    --gold: #d8b673;
+    --gold-bright: #f0d49a;
+    --gold-soft: rgba(216, 182, 115, 0.12);
+    --bg: #0b0e14;
+    --card: #161b26;
+    --card-border: #272f42;
+    --card-hover: #1e2536;
+    --text: #edf1f6;
+    --muted: #8b96ab;
+    --live: #e1707a;
+    --qualify: rgba(95, 185, 138, 0.13);
+    --qualify-border: #5fb98a;
+    --maybe: rgba(226, 189, 114, 0.13);
+    --maybe-border: #e2bd72;
+    --out: rgba(225, 112, 122, 0.10);
+    --out-border: #e1707a;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --shadow: 0 8px 28px rgba(0,0,0,0.45);
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
-    font-family: 'Sarabun', 'Segoe UI', Tahoma, sans-serif;
-    background: var(--bg);
+    font-family: 'Prompt', 'Segoe UI', Tahoma, sans-serif;
+    background:
+      radial-gradient(circle at top, #1a2030 0%, var(--bg) 55%);
+    background-attachment: fixed;
     color: var(--text);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
   }
   header.topbar {
     background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
-    color: #fff;
-    padding: 16px 20px;
+    border-bottom: 1px solid var(--card-border);
+    color: var(--text);
+    padding: 28px 24px;
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
   }
   header.topbar h1 {
     margin: 0;
-    font-size: 1.4rem;
+    font-size: 1.6rem;
+    font-weight: 600;
+    letter-spacing: 0.4px;
   }
   header.topbar h1 .sub {
     display: block;
-    font-size: 0.8rem;
-    font-weight: normal;
+    font-size: 0.82rem;
+    font-weight: 300;
     color: var(--gold);
-    margin-top: 2px;
+    margin-top: 8px;
+    letter-spacing: 0.3px;
   }
   .meta {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 14px;
     font-size: 0.85rem;
+    color: var(--muted);
   }
   #refreshBtn {
-    background: var(--gold);
-    color: var(--green-dark);
-    border: none;
-    border-radius: 6px;
-    padding: 6px 12px;
-    font-weight: bold;
+    background: transparent;
+    color: var(--gold-bright);
+    border: 1px solid var(--gold);
+    border-radius: 999px;
+    padding: 8px 20px;
+    font-weight: 500;
+    font-family: inherit;
     cursor: pointer;
     font-size: 0.85rem;
+    transition: background 0.2s ease, color 0.2s ease;
   }
+  #refreshBtn:hover { background: var(--gold-soft); }
   #refreshBtn:active { transform: scale(0.97); }
 
   nav.tabs {
     display: flex;
     flex-wrap: wrap;
-    background: var(--green-dark);
+    gap: 6px;
+    background: rgba(11,14,20,0.85);
+    backdrop-filter: blur(10px);
+    padding: 10px 16px;
     position: sticky;
     top: 0;
     z-index: 10;
+    border-bottom: 1px solid var(--card-border);
   }
   .tab-btn {
     flex: 1;
     min-width: 140px;
-    padding: 12px 8px;
+    padding: 10px 14px;
     background: transparent;
-    border: none;
-    color: #cfe8d8;
-    font-size: 0.95rem;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 0.92rem;
+    font-weight: 500;
     cursor: pointer;
-    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
   }
+  .tab-btn:hover { color: var(--text); border-color: var(--card-border); }
   .tab-btn.active {
-    color: #fff;
-    border-bottom: 3px solid var(--gold);
-    background: rgba(255,255,255,0.06);
+    color: #2a200c;
+    background: linear-gradient(135deg, var(--gold-bright), var(--gold));
+    font-weight: 600;
   }
 
-  main { max-width: 1100px; margin: 0 auto; padding: 14px; }
+  main { max-width: 1140px; margin: 0 auto; padding: 22px 16px 60px; }
   .tab-content { display: none; }
-  .tab-content.active { display: block; }
+  .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 
   .filters {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 12px;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 18px;
   }
   select {
-    padding: 8px 10px;
-    border-radius: 6px;
-    border: 1px solid #c9d4cd;
-    font-size: 0.95rem;
-    background: #fff;
+    padding: 10px 16px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--card-border);
+    font-size: 0.9rem;
+    background: var(--card);
+    color: var(--text);
+    font-family: inherit;
+    cursor: pointer;
   }
-  .filters label { font-size: 0.9rem; color: var(--muted); }
+  select:focus { outline: 1px solid var(--gold); }
+  .filters label {
+    font-size: 0.88rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    cursor: pointer;
+  }
+  input[type="checkbox"] { accent-color: var(--gold); width: 16px; height: 16px; }
 
   .date-heading {
-    margin: 18px 0 8px;
-    font-weight: bold;
-    color: var(--green-dark);
-    border-left: 4px solid var(--gold);
-    padding-left: 8px;
+    margin: 28px 0 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--gold-bright);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    letter-spacing: 0.3px;
+  }
+  .date-heading::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--card-border);
   }
   .match-card {
     background: var(--card);
-    border-radius: 8px;
-    padding: 10px 14px;
-    margin-bottom: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow);
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 10px;
+    gap: 14px;
+    transition: border-color 0.2s ease, transform 0.2s ease, background 0.2s ease;
+  }
+  .match-card:hover {
+    border-color: var(--gold);
+    background: var(--card-hover);
+    transform: translateY(-2px);
   }
   .match-time {
     min-width: 56px;
-    font-weight: bold;
-    color: var(--green-dark);
-    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--gold-bright);
+    font-size: 1rem;
+    text-align: center;
   }
   .match-teams {
     flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    font-size: 0.95rem;
-    min-width: 220px;
+    gap: 12px;
+    font-size: 0.98rem;
+    font-weight: 500;
+    min-width: 240px;
   }
   .match-teams .team {
     flex: 1;
@@ -151,37 +214,53 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 6px;
+    gap: 8px;
   }
   .match-teams .team.away {
     justify-content: flex-start;
     text-align: left;
   }
   .match-teams .score {
-    font-weight: bold;
+    font-weight: 700;
+    font-size: 1.05rem;
     background: var(--bg);
-    border-radius: 6px;
-    padding: 4px 10px;
-    min-width: 60px;
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-sm);
+    padding: 6px 16px;
+    min-width: 68px;
     text-align: center;
+    color: var(--gold-bright);
   }
-  .flag { font-size: 1.2rem; }
+  .flag {
+    width: 24px;
+    height: 18px;
+    border-radius: 3px;
+    object-fit: cover;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.1);
+    vertical-align: middle;
+    flex-shrink: 0;
+  }
   .match-status {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     color: var(--muted);
-    min-width: 90px;
+    min-width: 100px;
     text-align: center;
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: var(--bg);
+    border: 1px solid var(--card-border);
   }
   .match-status.live {
     color: var(--live);
-    font-weight: bold;
+    border-color: var(--live);
+    font-weight: 600;
   }
   .live-dot {
     display: inline-block;
     width: 8px; height: 8px;
     border-radius: 50%;
     background: var(--live);
-    margin-right: 4px;
+    margin-right: 5px;
     animation: pulse 1.2s infinite;
   }
   @keyframes pulse {
@@ -191,88 +270,125 @@
     width: 100%;
     font-size: 0.78rem;
     color: var(--muted);
+    border-top: 1px solid var(--card-border);
+    padding-top: 8px;
+    margin-top: 2px;
   }
 
   .groups-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
   }
   .group-card {
     background: var(--card);
-    border-radius: 8px;
-    padding: 10px 12px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    box-shadow: var(--shadow);
   }
-  .group-card h3 { margin: 0 0 6px; color: var(--green-dark); }
+  .group-card h3 {
+    margin: 0 0 12px;
+    color: var(--gold-bright);
+    font-weight: 600;
+    font-size: 1.05rem;
+  }
   table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-  th, td { padding: 4px 4px; text-align: center; }
-  th { color: var(--muted); font-weight: normal; border-bottom: 1px solid #e2e7e4; }
-  td.team-name { text-align: left; }
+  th, td { padding: 8px 6px; text-align: center; }
+  th {
+    color: var(--muted);
+    font-weight: 500;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    border-bottom: 1px solid var(--card-border);
+  }
+  td.team-name { text-align: left; font-weight: 500; }
+  tbody tr { border-bottom: 1px solid rgba(255,255,255,0.03); }
   tr.rank-1, tr.rank-2 { background: var(--qualify); }
   tr.rank-3 { background: var(--maybe); }
-  tr.rank-4 { background: var(--out); }
+  tr.rank-4 { background: var(--out); color: var(--muted); }
 
   .legend {
     display: flex;
     flex-wrap: wrap;
-    gap: 14px;
-    font-size: 0.8rem;
-    margin-bottom: 12px;
+    gap: 18px;
+    font-size: 0.82rem;
+    margin-bottom: 18px;
     color: var(--muted);
   }
-  .legend span { display: flex; align-items: center; gap: 6px; }
-  .legend .box { width: 14px; height: 14px; border-radius: 3px; display: inline-block; }
+  .legend span { display: flex; align-items: center; gap: 8px; }
+  .legend .box { width: 14px; height: 14px; border-radius: 4px; display: inline-block; }
   .box.qualify { background: var(--qualify); border: 1px solid var(--qualify-border); }
   .box.maybe { background: var(--maybe); border: 1px solid var(--maybe-border); }
   .box.out { background: var(--out); border: 1px solid var(--out-border); }
 
   .note {
-    background: #fff;
+    background: var(--card);
+    border: 1px solid var(--card-border);
     border-left: 4px solid var(--gold);
-    padding: 8px 12px;
-    margin-bottom: 12px;
-    font-size: 0.88rem;
-    border-radius: 6px;
+    padding: 14px 18px;
+    margin-bottom: 22px;
+    font-size: 0.9rem;
+    border-radius: var(--radius-sm);
+    color: var(--muted);
+    line-height: 1.9;
+  }
+  .note b { color: var(--text); }
+
+  #tab-qualified h3, #tab-teams h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--gold-bright);
+    margin: 26px 0 12px;
   }
 
   .qualified-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 8px;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 10px;
     margin-bottom: 16px;
   }
   .qualified-item {
     background: var(--qualify);
     border: 1px solid var(--qualify-border);
-    border-radius: 6px;
-    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
     font-size: 0.9rem;
+    font-weight: 500;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    transition: transform 0.15s ease;
   }
+  .qualified-item:hover { transform: translateY(-2px); }
   .qualified-item.maybe { background: var(--maybe); border-color: var(--maybe-border); }
 
   #teamSchedule .match-card { flex-direction: row; }
   .team-header {
     display: flex;
     align-items: center;
-    gap: 10px;
-    font-size: 1.2rem;
-    margin: 12px 0;
-    font-weight: bold;
-    color: var(--green-dark);
+    gap: 14px;
+    font-size: 1.3rem;
+    margin: 4px 0 22px;
+    font-weight: 600;
+    color: var(--text);
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 16px 22px;
+    box-shadow: var(--shadow);
   }
+  .team-header .flag { width: 40px; height: 30px; border-radius: 4px; }
 
   .error-banner {
-    background: #fde2e2;
+    background: var(--out);
     border: 1px solid var(--out-border);
-    color: #7a1f1f;
-    padding: 10px 14px;
-    margin: 10px auto;
-    max-width: 1100px;
-    border-radius: 6px;
+    color: var(--text);
+    padding: 12px 18px;
+    margin: 14px auto;
+    max-width: 1140px;
+    border-radius: var(--radius-sm);
     font-size: 0.9rem;
   }
 
@@ -280,7 +396,9 @@
     text-align: center;
     color: var(--muted);
     font-size: 0.78rem;
-    padding: 20px;
+    padding: 30px 20px 50px;
+    border-top: 1px solid var(--card-border);
+    margin-top: 24px;
   }
 </style>
 </head>
@@ -295,10 +413,10 @@
 </header>
 
 <nav class="tabs">
-  <button class="tab-btn active" data-tab="schedule">ตารางการแข่งขัน</button>
-  <button class="tab-btn" data-tab="standings">ตารางคะแนนกลุ่ม</button>
-  <button class="tab-btn" data-tab="qualified">สรุปทีมผ่านเข้ารอบ</button>
-  <button class="tab-btn" data-tab="teams">ตารางแข่งรายทีม</button>
+  <button class="tab-btn active" data-tab="schedule">📅 ตารางการแข่งขัน</button>
+  <button class="tab-btn" data-tab="standings">🏆 ตารางคะแนนกลุ่ม</button>
+  <button class="tab-btn" data-tab="qualified">✅ สรุปทีมผ่านเข้ารอบ</button>
+  <button class="tab-btn" data-tab="teams">🔍 ตารางแข่งรายทีม</button>
 </nav>
 
 <div id="errorBanner" class="error-banner" hidden></div>
@@ -371,20 +489,20 @@ const STATUS_TH = {
 const LIVE_STATUSES = new Set(['1H', 'HT', '2H', 'ET', 'BT', 'P']);
 const FINISHED_STATUSES = new Set(['FT', 'AET', 'PEN']);
 
-const FLAGS = {
-  'Mexico': '🇲🇽', 'South Africa': '🇿🇦', 'South Korea': '🇰🇷', 'Czech Republic': '🇨🇿',
-  'Canada': '🇨🇦', 'Bosnia-Herzegovina': '🇧🇦', 'USA': '🇺🇸', 'Paraguay': '🇵🇾',
-  'Brazil': '🇧🇷', 'Morocco': '🇲🇦', 'Qatar': '🇶🇦', 'Switzerland': '🇨🇭',
-  'Haiti': '🇭🇹', 'Scotland': '🏴', 'Germany': '🇩🇪', 'Curaçao': '🇨🇼', 'Curacao': '🇨🇼',
-  'Ivory Coast': '🇨🇮', "Côte d'Ivoire": '🇨🇮', 'Ecuador': '🇪🇨', 'Netherlands': '🇳🇱',
-  'Japan': '🇯🇵', 'Australia': '🇦🇺', 'Turkey': '🇹🇷', 'Türkiye': '🇹🇷', 'Belgium': '🇧🇪',
-  'Egypt': '🇪🇬', 'Saudi Arabia': '🇸🇦', 'Uruguay': '🇺🇾', 'Spain': '🇪🇸',
-  'Cape Verde': '🇨🇻', 'Sweden': '🇸🇪', 'Tunisia': '🇹🇳', 'Iran': '🇮🇷',
-  'New Zealand': '🇳🇿', 'France': '🇫🇷', 'Senegal': '🇸🇳', 'Iraq': '🇮🇶',
-  'Norway': '🇳🇴', 'Argentina': '🇦🇷', 'Algeria': '🇩🇿', 'Austria': '🇦🇹',
-  'Jordan': '🇯🇴', 'England': '🏴', 'Croatia': '🇭🇷', 'Ghana': '🇬🇭',
-  'Panama': '🇵🇦', 'Portugal': '🇵🇹', 'DR Congo': '🇨🇩', 'Uzbekistan': '🇺🇿',
-  'Colombia': '🇨🇴'
+const FLAG_CODES = {
+  'Mexico': 'mx', 'South Africa': 'za', 'South Korea': 'kr', 'Czech Republic': 'cz',
+  'Canada': 'ca', 'Bosnia-Herzegovina': 'ba', 'USA': 'us', 'Paraguay': 'py',
+  'Brazil': 'br', 'Morocco': 'ma', 'Qatar': 'qa', 'Switzerland': 'ch',
+  'Haiti': 'ht', 'Scotland': 'gb-sct', 'Germany': 'de', 'Curaçao': 'cw', 'Curacao': 'cw',
+  'Ivory Coast': 'ci', "Côte d'Ivoire": 'ci', 'Ecuador': 'ec', 'Netherlands': 'nl',
+  'Japan': 'jp', 'Australia': 'au', 'Turkey': 'tr', 'Türkiye': 'tr', 'Belgium': 'be',
+  'Egypt': 'eg', 'Saudi Arabia': 'sa', 'Uruguay': 'uy', 'Spain': 'es',
+  'Cape Verde': 'cv', 'Sweden': 'se', 'Tunisia': 'tn', 'Iran': 'ir',
+  'New Zealand': 'nz', 'France': 'fr', 'Senegal': 'sn', 'Iraq': 'iq',
+  'Norway': 'no', 'Argentina': 'ar', 'Algeria': 'dz', 'Austria': 'at',
+  'Jordan': 'jo', 'England': 'gb-eng', 'Croatia': 'hr', 'Ghana': 'gh',
+  'Panama': 'pa', 'Portugal': 'pt', 'DR Congo': 'cd', 'Uzbekistan': 'uz',
+  'Colombia': 'co'
 };
 
 const THAI_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
@@ -395,8 +513,10 @@ let roundLabels = {};
 
 function pad(n) { return String(n).padStart(2, '0'); }
 
-function flagFor(team) {
-  return FLAGS[team] || '⚽';
+function flagImg(team) {
+  const code = FLAG_CODES[team];
+  if (!code) return '';
+  return `<img class="flag" src="https://flagcdn.com/24x18/${code}.png" srcset="https://flagcdn.com/48x36/${code}.png 2x" alt="${team}" loading="lazy">`;
 }
 
 function toBangkok(dateEvent, strTime) {
@@ -623,9 +743,9 @@ function renderMatchCard(m) {
   div.innerHTML = `
     <div class="match-time">${formatTime(b)}</div>
     <div class="match-teams">
-      <div class="team home"><span>${m.strHomeTeam}</span><span class="flag">${flagFor(m.strHomeTeam)}</span></div>
+      <div class="team home"><span>${m.strHomeTeam}</span>${flagImg(m.strHomeTeam)}</div>
       <div class="score">${scoreText}</div>
-      <div class="team away"><span class="flag">${flagFor(m.strAwayTeam)}</span><span>${m.strAwayTeam}</span></div>
+      <div class="team away">${flagImg(m.strAwayTeam)}<span>${m.strAwayTeam}</span></div>
     </div>
     <div class="match-status ${isLive ? 'live' : ''}">${isLive ? '<span class="live-dot"></span>' : ''}${STATUS_TH[status] || status}</div>
     <div class="match-meta">${getMatchLabel(m)} • ${m.strVenue || ''}${m.strCity ? ' (' + m.strCity + ')' : ''}</div>
@@ -681,7 +801,7 @@ function renderStandings() {
     const rows = groups[g].map((t, idx) => `
       <tr class="rank-${idx + 1}">
         <td>${idx + 1}</td>
-        <td class="team-name">${flagFor(t.team)} ${t.team}</td>
+        <td class="team-name">${flagImg(t.team)} ${t.team}</td>
         <td>${t.P}</td>
         <td>${t.W}</td>
         <td>${t.D}</td>
@@ -757,7 +877,7 @@ function renderQualified() {
   directQualifiers.forEach(t => {
     const item = document.createElement('div');
     item.className = 'qualified-item';
-    item.innerHTML = `<span class="flag">${flagFor(t.team)}</span> <span>${t.team}</span> <small style="margin-left:auto;color:var(--muted)">กลุ่ม ${t.group}</small>`;
+    item.innerHTML = `${flagImg(t.team)} <span>${t.team}</span> <small style="margin-left:auto;color:var(--muted)">กลุ่ม ${t.group}</small>`;
     listA.appendChild(item);
   });
   el.appendChild(listA);
@@ -773,7 +893,7 @@ function renderQualified() {
     item.className = 'qualified-item' + (qualifies ? '' : ' maybe');
     item.style.background = qualifies ? 'var(--qualify)' : 'var(--out)';
     item.style.borderColor = qualifies ? 'var(--qualify-border)' : 'var(--out-border)';
-    item.innerHTML = `<span class="flag">${flagFor(t.team)}</span> <span>${t.team}</span>
+    item.innerHTML = `${flagImg(t.team)} <span>${t.team}</span>
       <small style="margin-left:auto;color:var(--muted)">กลุ่ม ${t.group} • ${t.Pts} แต้ม • #${idx + 1}</small>`;
     listB.appendChild(item);
   });
@@ -788,7 +908,7 @@ function renderQualified() {
   all32.forEach(t => {
     const item = document.createElement('div');
     item.className = 'qualified-item';
-    item.innerHTML = `<span class="flag">${flagFor(t.team)}</span> <span>${t.team}</span> <small style="margin-left:auto;color:var(--muted)">กลุ่ม ${t.group}</small>`;
+    item.innerHTML = `${flagImg(t.team)} <span>${t.team}</span> <small style="margin-left:auto;color:var(--muted)">กลุ่ม ${t.group}</small>`;
     listC.appendChild(item);
   });
   el.appendChild(listC);
@@ -814,7 +934,7 @@ function renderTeamSelect() {
     Array.from(teams).sort().forEach(t => {
       const opt = document.createElement('option');
       opt.value = t;
-      opt.textContent = `${flagFor(t)} ${t}`;
+      opt.textContent = t;
       optgroup.appendChild(opt);
     });
     sel.appendChild(optgroup);
@@ -830,7 +950,7 @@ function renderTeamSchedule() {
 
   const header = document.createElement('div');
   header.className = 'team-header';
-  header.innerHTML = `<span class="flag">${flagFor(team)}</span> ${team}`;
+  header.innerHTML = `${flagImg(team)} ${team}`;
   el.appendChild(header);
 
   const matches = allMatches
