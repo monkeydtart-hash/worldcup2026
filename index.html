@@ -684,6 +684,10 @@ const CACHE_KEY = 'wc2026_matches_v1';
 const CACHE_TTL_MS = 3 * 60 * 1000;
 const GOALS_CACHE_KEY = 'wc2026_goals_v1';
 const GOAL_FETCH_DELAY_MS = 300;
+const TOURNAMENT_START = '2026-06-11';
+const TOURNAMENT_END = '2026-07-19';
+const DAY_FETCH_BATCH_SIZE = 6;
+const DAY_FETCH_DELAY_MS = 250;
 
 const STATUS_TH = {
   'NS': 'ยังไม่เริ่ม',
@@ -776,11 +780,50 @@ async function fetchRound(r) {
   return json.events || [];
 }
 
+async function fetchDay(dateStr) {
+  const res = await fetch(`${API_BASE}/eventsday.php?d=${dateStr}&l=${LEAGUE_ID}`);
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const json = await res.json();
+  return json.events || [];
+}
+
+function tournamentDates() {
+  const dates = [];
+  const cur = new Date(`${TOURNAMENT_START}T00:00:00Z`);
+  const end = new Date(`${TOURNAMENT_END}T00:00:00Z`);
+  while (cur <= end) {
+    dates.push(cur.toISOString().slice(0, 10));
+    cur.setUTCDate(cur.getUTCDate() + 1);
+  }
+  return dates;
+}
+
+async function fetchAllDays() {
+  const dates = tournamentDates();
+  const out = [];
+  for (let i = 0; i < dates.length; i += DAY_FETCH_BATCH_SIZE) {
+    const batch = dates.slice(i, i + DAY_FETCH_BATCH_SIZE);
+    const results = await Promise.all(batch.map(d => fetchDay(d).catch(() => [])));
+    out.push(...results.flat());
+    if (i + DAY_FETCH_BATCH_SIZE < dates.length) {
+      await new Promise(r => setTimeout(r, DAY_FETCH_DELAY_MS));
+    }
+  }
+  return out;
+}
+
 async function fetchAllMatches() {
-  const results = await Promise.all(
-    Array.from({ length: MAX_ROUND }, (_, i) => fetchRound(i + 1).catch(() => null))
-  );
-  const matches = results.filter(Boolean).flat();
+  // eventsround.php and eventsday.php each truncate results on the free API key,
+  // so combine both and dedupe by idEvent to maximize coverage.
+  const [roundResults, dayResults] = await Promise.all([
+    Promise.all(Array.from({ length: MAX_ROUND }, (_, i) => fetchRound(i + 1).catch(() => []))),
+    fetchAllDays()
+  ]);
+  const merged = new Map();
+  [...roundResults.flat(), ...dayResults].forEach(m => {
+    if (m && m.idEvent) merged.set(m.idEvent, m);
+  });
+  const matches = Array.from(merged.values());
   if (!matches.length) throw new Error('no data');
   return matches;
 }
